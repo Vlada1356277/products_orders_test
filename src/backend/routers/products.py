@@ -1,18 +1,18 @@
-from itertools import product
-
 from fastapi import APIRouter, Depends, status, HTTPException
-from fastapi.encoders import jsonable_encoder
-from setuptools.extern import names
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
 from database import get_db, Product
 from schemas.products import ProductCreate, ProductResponse, ProductUpdate
 
 router = APIRouter(prefix='/products')
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=ProductResponse)
-async def create_product(product: ProductCreate, db: Session = Depends(get_db)):
-    product_exist = db.query(Product).filter(Product.name == product.name).first()
+async def create_product(product: ProductCreate, db: AsyncSession = Depends(get_db)):
+    product_exist = await db.execute(
+        select(Product).filter(Product.name == product.name)
+    )
+    product_exist = product_exist.scalars().first()
+
     if product_exist:
         raise HTTPException(status_code=400, detail="Продукт с этим именем уже создан")
 
@@ -22,33 +22,37 @@ async def create_product(product: ProductCreate, db: Session = Depends(get_db)):
                           stock_quantity=product.stock_quantity)
 
     db.add(new_product)
-    db.commit()
-    db.refresh(new_product)
+    await db.commit()
+    await db.refresh(new_product)
 
     return new_product
 
 
 @router.get("", response_model=list[ProductResponse])
-async def get_products(db: Session = Depends(get_db)):
-    products = db.query(Product).all()
+async def get_products(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Product))
+    products = result.scalars().all()
     return products
 
 
-@router.get("", response_model=ProductResponse)
-async def get_product(product_id: int, db: Session = Depends(get_db)):
-    product = db.query(Product).filter(Product.id == product_id)
+@router.get("/{id}", response_model=ProductResponse)
+async def get_product(product_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Product).filter(Product.id == product_id))
+    product = result.scalars().first()
+
     if not product:
         raise HTTPException(status_code=404, detail="Продукт не найден")
     return product
 
 
-@router.put("/{product_id}", response_model=ProductResponse)
+@router.put("/{id}", response_model=ProductResponse)
 async def update_product(product_id: int, product_data: ProductUpdate, db: AsyncSession = Depends(get_db)):
     product = await db.get(Product, product_id)
+
     if not product:
         raise HTTPException(status_code=404, detail="Продукт не найден")
 
-    update_data = jsonable_encoder(product_data)
+    update_data = product_data.model_dump(exclude_unset=True)
 
     for key, value in update_data.items():
         setattr(product, key, value)
@@ -58,12 +62,13 @@ async def update_product(product_id: int, product_data: ProductUpdate, db: Async
     return product
 
 
-@router.delete("/{product_id}", status_code=204)
-async def delete_product(product_id: int, db: Session = Depends(get_db)):
-    product = db.query(Product).filter(Product.id == product_id).first()
+@router.delete("/{id}", status_code=204)
+async def delete_product(product_id: int, db: AsyncSession = Depends(get_db)):
+    product = await db.get(Product, product_id)
+
     if not product:
         raise HTTPException(status_code=404, detail="Продукт не найден")
 
-    db.delete(product)
-    db.commit()
+    await db.delete(product)
+    await db.commit()
     return None

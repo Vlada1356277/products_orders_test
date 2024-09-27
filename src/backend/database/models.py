@@ -1,11 +1,9 @@
 from datetime import datetime
 from typing import Literal
-
 import sqlalchemy
 from sqlalchemy import Integer, String, Text, Float, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
-
 from database.database import Base
 
 Status = Literal["в процессе", "отправлен", "доставлен"]
@@ -21,6 +19,7 @@ class Product(Base):
 
     order_items: Mapped[list["OrderItem"]] = relationship("OrderItem", back_populates="product")
 
+
 class Order(Base):
     __tablename__ = 'orders'
 
@@ -29,6 +28,7 @@ class Order(Base):
     status: Mapped[Status] = mapped_column(sqlalchemy.Enum("в процессе", "отправлен", "доставлен", name="status"))
 
     order_items: Mapped[list["OrderItem"]] = relationship("OrderItem", back_populates="order")
+
 
 class OrderItem(Base):
     __tablename__ = 'order_items'

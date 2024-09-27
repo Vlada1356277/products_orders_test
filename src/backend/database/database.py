@@ -6,7 +6,6 @@ SQLALCHEMY_DATABASE_URL = settings.db_url
 
 engine = create_async_engine(url=SQLALCHEMY_DATABASE_URL, echo=True)
 
-#фабрика сессий
 SessionLocal = async_sessionmaker(bind=engine, autocommit=False, autoflush=False, expire_on_commit=False)
 
 class Base(DeclarativeBase):

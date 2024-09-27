@@ -16,8 +16,7 @@ async def lifespan(app: FastAPI):
     db.close()
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(api_router,
-                   prefix=settings.api.prefix)
+app.include_router(api_router)
 
 
 
