@@ -1,6 +1,7 @@
 from sqlalchemy.orm import DeclarativeBase
-from config import settings
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+
+from src.backend.config import settings
 
 SQLALCHEMY_DATABASE_URL = settings.db_url
 
@@ -13,4 +14,7 @@ class Base(DeclarativeBase):
 
 async def get_db() -> AsyncSession:
     async with SessionLocal() as session:
-        yield session
+        try:
+            yield session
+        finally:
+            await session.close()

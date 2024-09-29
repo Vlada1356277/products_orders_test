@@ -4,7 +4,8 @@ import sqlalchemy
 from sqlalchemy import Integer, String, Text, Float, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
-from database.database import Base
+
+from src.backend.database.database import Base
 
 Status = Literal["в процессе", "отправлен", "доставлен"]
 

@@ -2,9 +2,10 @@ from typing import List
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import defer, selectinload
-from database import Order, get_db, Product, OrderItem
-from schemas.orders import OrderResponse, OrderCreate, OrderStatusUpdate
+from sqlalchemy.orm import selectinload
+
+from src.backend.database import *
+from src.backend.schemas.orders import OrderResponse, OrderCreate, OrderStatusUpdate
 
 router = APIRouter(
     prefix='/orders',

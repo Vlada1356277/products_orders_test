@@ -11,7 +11,6 @@ class RunConfig(BaseModel):
 
 class Settings(BaseSettings):
     run: RunConfig = RunConfig()
-
     db_url: str = os.getenv("DB")
 
 settings = Settings()

@@ -1,23 +1,12 @@
-from contextlib import asynccontextmanager
-
 import uvicorn
 from fastapi import FastAPI
-from sqlalchemy.orm import Session
 
-from config import settings
-from database.database import SessionLocal
-from routers import router as api_router
+from src.backend.config import settings
+from src.backend.routers import router as api_router
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    db: Session = SessionLocal()
-    yield
-    db.close()
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 app.include_router(api_router)
-
 
 
 if __name__ == '__main__':

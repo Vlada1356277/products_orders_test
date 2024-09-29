@@ -2,9 +2,23 @@ services:
 
   pg:
     image: postgres
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: test_postgres_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
+
+  app:
+    build: .
+    volumes:
+      - .:/app
+    depends_on:
+      - pg
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    command: python src/backend/main.py

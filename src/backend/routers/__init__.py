@@ -4,10 +4,6 @@ from .products import router as products_router
 
 router = APIRouter()
 
-router.include_router(
-    orders_router
-)
+router.include_router(orders_router)
 
-router.include_router(
-    products_router
-)
+router.include_router(products_router)
